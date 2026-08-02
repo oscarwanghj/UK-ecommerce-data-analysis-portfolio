@@ -10,6 +10,6 @@ transaction data, with business recommendations for retention and growth.
 **Key finding:** 19.3% of customers (Champions) generate 62% of revenue.
 
 📓 [View the full analysis](/Data_Analyst_Portfolio.ipynb)  
-▶️ [Open live in Google Colab]([your-colab-share-link-here](https://colab.research.google.com/drive/1ZbpBOsI1WxeRXLCPPn_OAffa5pV9mdHb?usp=sharing))
+▶️ [Open live in Google Colab](https://colab.research.google.com/drive/1ZbpBOsI1WxeRXLCPPn_OAffa5pV9mdHb?usp=sharing)
 
 **Skills:** Python, pandas, Data Visualisation (matplotlib), Market Segmentation (RFM analysis), Data Cleaning (Nulls, Duplicates, Cancellation), market basket analysis, etc
