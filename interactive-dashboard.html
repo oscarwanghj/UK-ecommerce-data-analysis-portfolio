@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Customer Value Dashboard · Oscar Wang</title>
+<meta name="description" content="Interactive customer analytics dashboard: 37.5% of customers drive 77.6% of revenue. UK online retailer, Dec 2010 – Dec 2011.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+:root {
+  --bg: #F6F5F1; --panel: #FFFFFF; --fg: #13233F; --muted: #4A5568; --line: #DCDFE5;
+  --accent: #2A63C9; --accent-soft: #E8EEF9; --bar-muted: #A9B4C6; --bad: #B4441A; --grid: #EEF0F4;
+  --sans: 'Inter', Arial, sans-serif; --display: 'Space Grotesk', Arial, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0F1A2E; --panel: #16243D; --fg: #EEF2F8; --muted: #A9B6CB; --line: #2A3A57;
+    --accent: #7FA8F0; --accent-soft: #1E3358; --bar-muted: #55657F; --bad: #F08A5D; --grid: #1E2E4A; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 40px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 28px; }
+.eyebrow { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.pill { display: inline-block; font-family: var(--display); font-weight: 700; font-size: 14px; background: var(--accent-soft); color: var(--accent); padding: 4px 12px; border-radius: 999px; margin: 0; align-self: flex-start; }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(30px, 5vw, 46px); line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 700; font-size: 20px; margin: 0; }
+.lede { font-size: clamp(17px, 2.2vw, 21px); margin: 0; max-width: 62ch; }
+.lede b { color: var(--accent); }
+header { display: flex; flex-direction: column; gap: 12px; }
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+.tab { font: inherit; font-size: 15px; background: none; border: 0; border-bottom: 2px solid transparent; padding: 10px 14px; color: var(--muted); cursor: pointer; }
+.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); font-weight: 600; }
+button:focus-visible, .row:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+section { display: flex; flex-direction: column; gap: 20px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.kpi { font-family: var(--display); font-weight: 700; font-size: 38px; margin: 0; font-variant-numeric: tabular-nums; }
+.label { font-size: 13px; color: var(--muted); margin: 0; }
+.p { margin: 0; max-width: 65ch; }
+.split { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 20px; align-items: start; }
+@media (max-width: 780px) { .split { grid-template-columns: 1fr; } }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.chart { position: relative; min-height: 320px; }
+.tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--line); box-shadow: 0 6px 18px rgba(0,0,0,.12); border-radius: 10px; padding: 8px 12px; font-size: 13px; white-space: nowrap; z-index: 2; }
+.tip b { display: block; }
+.tip span { color: var(--muted); }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.stat { font-family: var(--display); font-weight: 700; font-size: 24px; margin: 0; font-variant-numeric: tabular-nums; }
+.bundles { margin: 0; padding-left: 18px; font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
+.rec { margin: 0; padding-top: 10px; border-top: 1px solid var(--line); }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.step { border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+.step-n { font-family: var(--display); font-weight: 700; font-size: 24px; margin: 0; font-variant-numeric: tabular-nums; }
+.toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; align-self: flex-start; }
+.toggle button { font: inherit; font-size: 13px; background: none; border: 0; padding: 8px 14px; color: var(--muted); cursor: pointer; }
+.toggle button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.pairs { list-style: none; margin: 0; padding: 0; }
+.pairs li { display: grid; grid-template-columns: 1.6em minmax(0, 1fr) auto; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13px; align-items: baseline; }
+.pairs .rev { color: var(--muted); font-variant-numeric: tabular-nums; }
+.pairs li.swap .name { color: var(--bad); }
+.pairs li.gone .name, .pairs li.gone .rev { text-decoration: line-through; color: var(--muted); }
+.flag { display: block; font-size: 12px; color: var(--bad); }
+.gone .flag { color: var(--muted); }
+.actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.play { align-self: flex-start; font-size: 12px; font-weight: 600; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 3px 10px; margin: 0; }
+.big { font-family: var(--display); font-weight: 700; font-size: 34px; margin: 0; font-variant-numeric: tabular-nums; }
+.whatif { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+.whatif > div { display: flex; flex-direction: column; gap: 6px; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+details { font-size: 13px; color: var(--muted); }
+summary { cursor: pointer; }
+footer { font-size: 13px; color: var(--muted); display: flex; gap: 18px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 16px; }
+footer a { color: var(--accent); }
+@media (prefers-reduced-motion: no-preference) { .bar { transition: width .4s ease-out; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="pill">AI-Powered Customer Analytics</p>
+    <h1>Who really drives the revenue?</h1>
+    <p class="lede">Champions and Loyal customers are <b id="h-cust"></b> of customers but bring in <b id="h-rev"></b> of revenue. The biggest group, Lost customers, brings in the least.</p>
+    <p class="eyebrow">UK online retailer · Dec 2010 – Dec 2011 · Oscar Wang, Data Analyst</p>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Dashboard sections">
+    <button class="tab" role="tab" data-tab="overview" aria-selected="true">Who drives revenue</button>
+    <button class="tab" role="tab" data-tab="process" aria-selected="false">Raw data to insight</button>
+    <button class="tab" role="tab" data-tab="actions" aria-selected="false">Action plan</button>
+  </nav>
+
+  <section id="overview">
+    <div class="kpis">
+      <div class="card"><p class="label">Revenue analysed (one year)</p><p class="kpi" id="k-rev"></p></div>
+      <div class="card"><p class="label">Customers profiled</p><p class="kpi" id="k-cust"></p></div>
+      <div class="card"><p class="label">Revenue from Champions + Loyal</p><p class="kpi" id="k-share"></p></div>
+    </div>
+    <div class="split">
+      <div class="card">
+        <h2>Share of customers vs share of revenue</h2>
+        <p class="label">Click a segment to see its profile.</p>
+        <div class="legend"><span><span class="sw" style="background:var(--bar-muted)"></span>Share of customers</span><span><span class="sw" style="background:var(--accent)"></span>Share of revenue</span></div>
+        <div class="chart" id="chart"></div>
+      </div>
+      <div class="card" id="detail"></div>
+    </div>
+  </section>
+
+  <section id="process" hidden>
+    <div class="card">
+      <h2>From half a million messy rows to customer profiles</h2>
+      <div class="steps" id="steps"></div>
+      <p class="label">Each customer was then placed in one of six segments, and 17,143 multi-item baskets were analysed for products bought together.</p>
+    </div>
+    <div class="split">
+      <div class="card">
+        <h2>AI drafted the code. I made the calls.</h2>
+        <p class="p">To find cross-selling opportunities, I looked for products bought together. The AI-drafted ranking counted colour variants of one product as a “bundle”. Switch views to see what my filter changed (At Risk segment shown).</p>
+        <div class="toggle" role="group" aria-label="Ranking view">
+          <button type="button" data-mode="raw" aria-pressed="true">AI’s first ranking</button>
+          <button type="button" data-mode="mine" aria-pressed="false">After my judgement</button>
+        </div>
+        <ol class="pairs" id="pairs"></ol>
+        <p class="label">Basket revenue is the value of orders containing the pair, used as a ranking signal.</p>
+      </div>
+      <div class="card">
+        <h2>Groups based on real behaviour</h2>
+        <p class="p"><b>AI’s draft:</b> equal-sized groups, chosen for statistical convenience.</p>
+        <p class="p"><b>My call:</b> that’s not how real customers shop, so I set the groups by how often customers actually order.</p>
+        <p class="p">AI gave me speed, and I brought the customer insight.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="actions" hidden>
+    <div class="actions">
+      <div class="card"><p class="play">Long-term play</p><h2>Protect Champions</h2><p class="big" id="a-champ"></p><p class="label">at risk if just 5% leave. Loyalty rewards and VIP early access.</p></div>
+      <div class="card"><p class="play">Strategic fix</p><h2>Grow Loyal customers</h2><p class="big" id="a-loyal"></p><p class="label">gained from a 10% spend lift. Promote the pairing they already buy together.</p></div>
+      <div class="card"><p class="play">Quick win</p><h2>Don’t overspend on Lost</h2><p class="big" id="a-lost"></p><p class="label">of revenue from the largest group. Low-cost automated emails, not big win-back budgets.</p></div>
+    </div>
+    <div class="card">
+      <h2>What if the assumptions change?</h2>
+      <p class="label">Move the sliders to test other scenarios. Estimates use each segment’s average annual spend.</p>
+      <div class="whatif">
+        <div>
+          <label for="churn">Champions who leave: <b id="churn-v"></b></label>
+          <input type="range" id="churn" min="1" max="20" step="1" value="5">
+          <p class="big" id="churn-out"></p><p class="label">annual revenue at risk</p>
+        </div>
+        <div>
+          <label for="lift">Spend lift among Loyal customers: <b id="lift-v"></b></label>
+          <input type="range" id="lift" min="1" max="30" step="1" value="10">
+          <p class="big" id="lift-out"></p><p class="label">extra annual revenue</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <details>
+    <summary>Method and data notes</summary>
+    <p>Data: UCI Online Retail dataset, a real UK online gift retailer, Dec 2010 – Dec 2011 (541,909 raw lines). Analysis in Python (pandas), with code drafted by Claude and validated by me. Customers were scored on recency, frequency (number of orders) and spend, then grouped into six segments. £ impacts are illustrative estimates, not forecasts.</p>
+  </details>
+
+  <footer>
+    <span>Oscar Wang · Data Analyst</span>
+    <a href="https://github.com/oscarwanghj/UK-ecommerce-data-analysis-portfolio">Full analysis &amp; code</a>
+    <a href="https://www.linkedin.com/in/oscar-wang-0aa820269/">LinkedIn</a>
+    <span>oscar.hj.wang@gmail.com</span>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+const SEGMENTS = [
+  { segment: 'Champions', customers: 837, pct_customers: 19.3, revenue: 5511937.1, pct_revenue: 62.0, avg_spend: 6585.3, avg_orders: 12.3, avg_days_since: 12.4 },
+  { segment: 'Loyal Customers', customers: 790, pct_customers: 18.2, revenue: 1383857.0, pct_revenue: 15.6, avg_spend: 1751.7, avg_orders: 4.3, avg_days_since: 33.0 },
+  { segment: 'Lost', customers: 1325, pct_customers: 30.5, revenue: 676413.2, pct_revenue: 7.6, avg_spend: 510.5, avg_orders: 1.3, avg_days_since: 209.6 },
+  { segment: 'At Risk', customers: 383, pct_customers: 8.8, revenue: 639961.4, pct_revenue: 7.2, avg_spend: 1670.9, avg_orders: 4.4, avg_days_since: 137.4 },
+  { segment: 'New Customers', customers: 528, pct_customers: 12.2, revenue: 432278.1, pct_revenue: 4.9, avg_spend: 818.7, avg_orders: 1.5, avg_days_since: 17.6 },
+  { segment: 'Need Attention', customers: 476, pct_customers: 11.0, revenue: 242762.0, pct_revenue: 2.7, avg_spend: 510.0, avg_orders: 1.4, avg_days_since: 53.4 }
+];
+const PIPELINE = [
+  [541909, 'Raw transaction lines'], [406829, 'Lines with a customer ID'], [401604, 'After removing duplicates'],
+  [392732, 'After removing cancellations'], [4339, 'Customer profiles (recency / frequency / spend)']
+];
+const RAW_PAIRS = [
+  ['GIN + TONIC DIET METAL SIGN', 'WHITE HANGING HEART T-LIGHT HOLDER', 46138.62, false],
+  ['GREEN REGENCY TEACUP AND SAUCER', 'ROSES REGENCY TEACUP AND SAUCER', 37948.09, true],
+  ['FAIRY CAKE FLANNEL ASSORTED COLOUR', 'WHITE HANGING HEART T-LIGHT HOLDER', 37740.17, false],
+  ['FAIRY CAKE FLANNEL ASSORTED COLOUR', 'GIN + TONIC DIET METAL SIGN', 36696.80, false],
+  ['REGENCY CAKESTAND 3 TIER', 'ROSES REGENCY TEACUP AND SAUCER', 32863.27, false]
+];
+const TOP_BUNDLES = {
+  'Champions': ['REGENCY CAKESTAND 3 TIER + ROSES REGENCY TEACUP AND SAUCER', 'REGENCY CAKESTAND 3 TIER + SPACEBOY LUNCH BOX', 'GREEN REGENCY TEACUP AND SAUCER + REGENCY CAKESTAND 3 TIER'],
+  'Loyal Customers': ['FELTCRAFT CUSHION OWL + RED FLORAL FELTCRAFT SHOULDER BAG', 'REGENCY CAKESTAND 3 TIER + ROSES REGENCY TEACUP AND SAUCER', 'PARTY BUNTING + SPOTTY BUNTING']
+};
+const RECS = {
+  'Champions': ['Protect.', 'The most valuable group by far. Loyalty rewards and VIP early access come first.'],
+  'Loyal Customers': ['Grow.', 'Big enough to matter, not yet spending like Champions. Package the pairing they already buy together.'],
+  'Lost': ['Don’t overspend.', 'The largest group but low value, and hard to win back. Low-cost automated emails only.'],
+  'At Risk': ['Win back, selectively.', 'Small but valuable. A targeted reminder built on what they used to buy.'],
+  'New Customers': ['Nurture.', 'Recent first purchases. Recommend a second order while interest is fresh.'],
+  'Need Attention': ['Monitor.', 'Light-touch newsletters; no dedicated campaign budget yet.']
+};
+
+const fmt = d3.format(',');
+const byName = (n) => SEGMENTS.find((s) => s.segment === n);
+const totalCust = d3.sum(SEGMENTS, (s) => s.customers);
+const totalRev = d3.sum(SEGMENTS, (s) => s.revenue);
+const core = SEGMENTS.filter((s) => s.segment === 'Champions' || s.segment === 'Loyal Customers');
+const custShare = (d3.sum(core, (s) => s.customers) / totalCust * 100).toFixed(1) + '%';
+const revShare = (d3.sum(core, (s) => s.revenue) / totalRev * 100).toFixed(1) + '%';
+const $ = (id) => document.getElementById(id);
+
+$('h-cust').textContent = custShare;
+$('h-rev').textContent = revShare;
+$('k-rev').textContent = '£' + (totalRev / 1e6).toFixed(1) + 'M';
+$('k-cust').textContent = fmt(totalCust);
+$('k-share').textContent = revShare;
+
+let selected = 'Champions';
+function drawChart() {
+  const el = $('chart'); el.replaceChildren();
+  const data = SEGMENTS.slice().sort((a, b) => b.revenue - a.revenue);
+  const W = Math.max(280, el.clientWidth || 560);
+  const labelW = W < 460 ? 110 : 150, valW = 52, rowH = 54, H = data.length * rowH;
+  const x = d3.scaleLinear().domain([0, 70]).range([0, W - labelW - valW]);
+  const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`)
+    .attr('role', 'img').attr('aria-label', 'Share of customers and share of revenue for each customer segment');
+  const tip = d3.select(el).append('div').attr('class', 'tip').attr('hidden', '');
+  data.forEach((r, i) => {
+    const sel = selected === r.segment;
+    const g = svg.append('g').attr('class', 'row').attr('transform', `translate(0,${i * rowH})`)
+      .attr('tabindex', 0).attr('role', 'button').attr('aria-pressed', String(sel))
+      .attr('aria-label', `${r.segment}: ${r.pct_customers}% of customers, ${r.pct_revenue}% of revenue`).style('cursor', 'pointer');
+    g.append('rect').attr('width', W).attr('height', rowH - 4).attr('y', 2).attr('rx', 8).style('fill', sel ? 'var(--grid)' : 'transparent');
+    g.append('text').attr('x', 8).attr('y', rowH / 2 + 5).text(r.segment)
+      .style('fill', 'var(--fg)').style('font-size', '13px').style('font-weight', sel ? 600 : 400);
+    [['pct_customers', 'var(--bar-muted)', 11], ['pct_revenue', 'var(--accent)', 29]].forEach(([f, c, y]) => {
+      const w = Math.max(2, x(r[f]));
+      g.append('rect').attr('class', 'bar').attr('x', labelW).attr('y', y).attr('height', 14).attr('rx', 2).attr('width', w).style('fill', c);
+      g.append('text').attr('x', labelW + w + 6).attr('y', y + 11).text(r[f].toFixed(1) + '%')
+        .style('fill', 'var(--muted)').style('font-size', '12px');
+    });
+    const pick = () => { selected = r.segment; drawChart(); drawDetail(); };
+    g.on('click', pick)
+      .on('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } })
+      .on('mousemove', (e) => {
+        const [mx, my] = d3.pointer(e, el);
+        tip.attr('hidden', null); tip.selectAll('*').remove();
+        tip.append('b').text(r.segment);
+        tip.append('span').text(`${r.pct_customers.toFixed(1)}% of customers · ${r.pct_revenue.toFixed(1)}% of revenue`);
+        const tw = tip.node().offsetWidth;
+        tip.style('left', Math.min(Math.max(0, mx + 12), W - tw) + 'px').style('top', (my + 14) + 'px');
+      })
+      .on('mouseleave', () => tip.attr('hidden', ''));
+  });
+}
+
+function drawDetail() {
+  const el = $('detail'); el.replaceChildren();
+  const r = byName(selected);
+  const h = document.createElement('h2'); h.textContent = r.segment;
+  const grid = document.createElement('div'); grid.className = 'stats';
+  [['Customers', fmt(r.customers)], ['Share of revenue', r.pct_revenue.toFixed(1) + '%'],
+   ['Average annual spend', '£' + fmt(Math.round(r.avg_spend))], ['Average orders per customer', r.avg_orders.toFixed(1)],
+   ['Days since last order (avg)', String(Math.round(r.avg_days_since))]].forEach(([l, v]) => {
+    const d = document.createElement('div');
+    const s = document.createElement('p'); s.className = 'stat'; s.textContent = v;
+    const lb = document.createElement('p'); lb.className = 'label'; lb.textContent = l;
+    d.append(s, lb); grid.append(d);
+  });
+  el.append(h, grid);
+  if (TOP_BUNDLES[r.segment]) {
+    const t = document.createElement('p'); t.className = 'label'; t.textContent = 'Top pairings bought together';
+    const ol = document.createElement('ol'); ol.className = 'bundles';
+    TOP_BUNDLES[r.segment].forEach((b) => { const li = document.createElement('li'); li.textContent = b; ol.append(li); });
+    el.append(t, ol);
+  }
+  const rec = document.createElement('p'); rec.className = 'rec';
+  const b = document.createElement('b'); b.textContent = RECS[r.segment][0] + ' ';
+  rec.append(b, RECS[r.segment][1]); el.append(rec);
+}
+
+function drawSteps() {
+  const el = $('steps'); el.replaceChildren();
+  PIPELINE.forEach(([n, l]) => {
+    const d = document.createElement('div'); d.className = 'step';
+    const a = document.createElement('p'); a.className = 'step-n'; a.textContent = fmt(n);
+    const b = document.createElement('p'); b.className = 'label'; b.textContent = l;
+    d.append(a, b); el.append(d);
+  });
+}
+
+let mode = 'raw';
+function drawPairs() {
+  const el = $('pairs'); el.replaceChildren();
+  let rank = 0;
+  RAW_PAIRS.forEach(([a, b, rev, swap]) => {
+    const li = document.createElement('li');
+    if (swap) li.className = mode === 'mine' ? 'gone' : 'swap';
+    const k = document.createElement('span'); k.textContent = swap && mode === 'mine' ? '–' : String(++rank);
+    const nm = document.createElement('span'); nm.className = 'name'; nm.textContent = a + ' + ' + b;
+    if (swap) { const f = document.createElement('span'); f.className = 'flag'; f.textContent = mode === 'mine' ? 'Removed: same product, different colour' : 'Same product, different colour'; nm.append(f); }
+    const v = document.createElement('span'); v.className = 'rev'; v.textContent = '£' + fmt(Math.round(rev));
+    li.append(k, nm, v); el.append(li);
+  });
+}
+document.querySelectorAll('.toggle button').forEach((btn) => btn.addEventListener('click', () => {
+  mode = btn.dataset.mode;
+  document.querySelectorAll('.toggle button').forEach((x) => x.setAttribute('aria-pressed', String(x === btn)));
+  drawPairs();
+}));
+
+const champ = byName('Champions'), loyal = byName('Loyal Customers');
+$('a-champ').textContent = '£' + Math.round(Math.round(champ.customers * 0.05) * champ.avg_spend / 1000) + 'K';
+$('a-loyal').textContent = '£' + Math.round(loyal.revenue * 0.10 / 1000) + 'K';
+$('a-lost').textContent = byName('Lost').pct_revenue.toFixed(1) + '%';
+function drawWhatIf() {
+  const c = +$('churn').value, l = +$('lift').value;
+  $('churn-v').textContent = c + '%';
+  $('lift-v').textContent = l + '%';
+  $('churn-out').textContent = '£' + fmt(Math.round(Math.round(champ.customers * c / 100) * champ.avg_spend / 1000)) + 'K';
+  $('lift-out').textContent = '£' + fmt(Math.round(loyal.revenue * l / 100 / 1000)) + 'K';
+}
+$('churn').addEventListener('input', drawWhatIf);
+$('lift').addEventListener('input', drawWhatIf);
+
+const tabs = Array.from(document.querySelectorAll('.tab'));
+function openTab(id) {
+  if (!['overview', 'process', 'actions'].includes(id)) id = 'overview';
+  tabs.forEach((t) => t.setAttribute('aria-selected', String(t.dataset.tab === id)));
+  ['overview', 'process', 'actions'].forEach((s) => { $(s).hidden = s !== id; });
+  if (id === 'overview') drawChart();
+}
+tabs.forEach((t) => t.addEventListener('click', () => { openTab(t.dataset.tab); history.replaceState(null, '', '#' + t.dataset.tab); }));
+
+drawChart(); drawDetail(); drawSteps(); drawPairs(); drawWhatIf();
+openTab((location.hash || '').slice(1));
+let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(drawChart, 150); });
+</script>
+</body>
+</html>
